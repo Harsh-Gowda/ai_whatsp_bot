@@ -4,6 +4,7 @@ import { Sidebar } from './components/Sidebar';
 import { BottomBar } from './components/BottomBar';
 import { NoiseOverlay } from './components/NoiseOverlay';
 import { DashboardProvider } from './context/DashboardContext';
+import { Toaster } from './components/ui/sonner';
 
 // Pages
 import DashboardPage from './pages/DashboardPage';
@@ -24,6 +25,9 @@ function App() {
   return (
     <DashboardProvider>
       <div className="min-h-screen bg-[var(--noir-charcoal)] text-[var(--noir-text)] overflow-hidden flex">
+        {/* Notifications */}
+        <Toaster position="top-right" closeButton />
+
         {/* Noise Texture Overlay */}
         <NoiseOverlay />
 

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
+import { toast } from 'sonner';
 
 // Types
 export interface Lead {
@@ -153,7 +154,13 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
         .channel(`messages-${selectedLead.id}`)
         .on('postgres_changes',
           { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `lead_id=eq.${selectedLead.id}` },
-          () => {
+          (payload) => {
+            const newMessage = payload.new as any;
+            if (newMessage.role === 'user') {
+              toast.info(`New message from ${selectedLead.name}`, {
+                description: newMessage.content.substring(0, 50) + (newMessage.content.length > 50 ? '...' : ''),
+              });
+            }
             fetchMessages(selectedLead.id);
           }
         )
@@ -183,7 +190,23 @@ export function DashboardProvider({ children }: { children: React.ReactNode }) {
     const leadsChannel = supabase
       .channel('leads-all')
       .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'leads' },
+        { event: 'INSERT', schema: 'public', table: 'leads' },
+        (payload) => {
+          const newLead = payload.new as any;
+          toast.success('New Patient Lead!', {
+            description: `${newLead.name || 'Someone'} just messaged from ${newLead.phone}`,
+          });
+          fetchLeads();
+        }
+      )
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'leads' },
+        () => {
+          fetchLeads();
+        }
+      )
+      .on('postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'leads' },
         () => {
           fetchLeads();
         }
