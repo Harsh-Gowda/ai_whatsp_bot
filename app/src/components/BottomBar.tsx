@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { 
-  Wifi, WifiOff, HelpCircle, Settings, 
-  Bell 
+import {
+  Wifi, WifiOff, HelpCircle, Settings,
+  Bell
 } from 'lucide-react';
 import { useDashboard } from '../context/DashboardContext';
 import { Button } from '@/components/ui/button';
@@ -37,7 +37,7 @@ export function BottomBar() {
 
   return (
     <TooltipProvider>
-      <div className="w-full bg-[var(--noir-charcoal-lifted)] border-t border-[var(--noir-border)]">
+      <div className="w-full bg-[var(--noir-charcoal-lifted)] border-b border-[var(--noir-border)] sticky top-0 z-50">
         <div className="px-4 sm:px-6 lg:px-7 py-3">
           <div className="flex items-center justify-between">
             {/* Left: Connection Status */}
@@ -48,7 +48,7 @@ export function BottomBar() {
                   {isOnline ? 'Connected' : 'Disconnected'}
                 </span>
               </div>
-              
+
               <div className="hidden sm:flex items-center gap-2 text-sm text-[var(--noir-text-secondary)]">
                 <span className="text-[var(--noir-border)]">|</span>
                 <span>Dental Studio</span>
@@ -80,8 +80,8 @@ export function BottomBar() {
               {/* Bot Status Indicator */}
               <div className={`
                 hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium
-                ${isBotPaused 
-                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
+                ${isBotPaused
+                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                   : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                 }
               `}>
@@ -100,11 +100,11 @@ export function BottomBar() {
 
               {/* Time */}
               <span className="hidden lg:block text-sm text-[var(--noir-text-secondary)] font-tabular">
-                {currentTime.toLocaleTimeString('en-US', { 
-                  hour: '2-digit', 
+                {currentTime.toLocaleTimeString('en-US', {
+                  hour: '2-digit',
                   minute: '2-digit',
                   second: '2-digit',
-                  hour12: false 
+                  hour12: false
                 })}
               </span>
 
@@ -119,7 +119,7 @@ export function BottomBar() {
                     <Bell className="w-4 h-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent 
+                <TooltipContent
                   side="top"
                   className="bg-[var(--noir-charcoal-lifted)] border-[var(--noir-border)] text-[var(--noir-text)]"
                 >
@@ -137,7 +137,7 @@ export function BottomBar() {
                     <HelpCircle className="w-4 h-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent 
+                <TooltipContent
                   side="top"
                   className="bg-[var(--noir-charcoal-lifted)] border-[var(--noir-border)] text-[var(--noir-text)]"
                 >
@@ -155,7 +155,7 @@ export function BottomBar() {
                     <Settings className="w-4 h-4" />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent 
+                <TooltipContent
                   side="top"
                   className="bg-[var(--noir-charcoal-lifted)] border-[var(--noir-border)] text-[var(--noir-text)]"
                 >

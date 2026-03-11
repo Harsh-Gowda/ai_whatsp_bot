@@ -35,6 +35,9 @@ function App() {
           className={`flex-1 flex flex-col min-h-screen transition-all duration-700 ml-64 ${isLoaded ? 'opacity-100' : 'opacity-0'
             }`}
         >
+          {/* Top Status Bar (formerly BottomBar) */}
+          <BottomBar />
+
           {/* Main Content with Routing */}
           <main className="flex-1 px-8 py-8 overflow-y-auto">
             <Routes>
@@ -45,9 +48,6 @@ function App() {
               <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </main>
-
-          {/* Bottom Utility Bar */}
-          <BottomBar />
         </div>
       </div>
     </DashboardProvider>
