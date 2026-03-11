@@ -36,6 +36,24 @@ export function LiveChat() {
     }
   };
 
+  if (!selectedLead) {
+    return (
+      <div className="glass-card h-full flex items-center justify-center text-center p-8 min-h-[500px]">
+        <div className="max-w-xs">
+          <Avatar className="w-16 h-16 mx-auto mb-4 border-2 border-[var(--noir-border)] grayscale opacity-50">
+            <AvatarFallback className="bg-[var(--noir-surface)] text-[var(--noir-text-secondary)]">
+              ?
+            </AvatarFallback>
+          </Avatar>
+          <h3 className="text-lg font-semibold text-[var(--noir-text)] mb-2">No Conversation Selected</h3>
+          <p className="text-sm text-[var(--noir-text-secondary)]">
+            Select a lead from the sidebar to start responding to their messages in real-time.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="glass-card h-full flex flex-col min-h-[500px]">
       {/* Chat Header */}
@@ -58,10 +76,10 @@ export function LiveChat() {
             </p>
           </div>
         </div>
-        
+
         <div className="flex items-center gap-2">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             size="icon"
             className="text-[var(--noir-text-secondary)] hover:text-[var(--noir-text)] hover:bg-[var(--noir-surface)]"
           >
@@ -69,15 +87,15 @@ export function LiveChat() {
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
                 className="text-[var(--noir-text-secondary)] hover:text-[var(--noir-text)] hover:bg-[var(--noir-surface)]"
               >
                 <MoreVertical className="w-4 h-4" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent 
+            <DropdownMenuContent
               align="end"
               className="bg-[var(--noir-charcoal-lifted)] border-[var(--noir-border)]"
             >
@@ -100,26 +118,25 @@ export function LiveChat() {
         {chatMessages.map((message, index) => {
           const isUser = message.role === 'user';
           const showAvatar = index === 0 || chatMessages[index - 1].role !== message.role;
-          
+
           return (
-            <div 
+            <div
               key={message.id}
               className={`flex gap-3 ${isUser ? 'flex-row' : 'flex-row-reverse'}`}
             >
               {showAvatar && (
                 <Avatar className="w-8 h-8 mt-1 flex-shrink-0">
-                  <AvatarFallback 
-                    className={`text-xs font-semibold ${
-                      isUser 
-                        ? 'bg-[var(--noir-surface)] text-[var(--noir-text-secondary)]' 
+                  <AvatarFallback
+                    className={`text-xs font-semibold ${isUser
+                        ? 'bg-[var(--noir-surface)] text-[var(--noir-text-secondary)]'
                         : 'bg-emerald-500/20 text-emerald-400'
-                    }`}
+                      }`}
                   >
                     {isUser ? 'P' : 'AI'}
                   </AvatarFallback>
                 </Avatar>
               )}
-              
+
               <div className={`flex flex-col ${!showAvatar && (isUser ? 'ml-11' : 'mr-11')}`}>
                 <div className={isUser ? 'message-bubble-user' : 'message-bubble-ai'}>
                   <p className="text-sm text-[var(--noir-text)] leading-relaxed">
@@ -151,7 +168,7 @@ export function LiveChat() {
             placeholder="Type a reply..."
             className="flex-1 bg-[var(--noir-surface)] border-[var(--noir-border)] text-[var(--noir-text)] placeholder:text-[var(--noir-text-secondary)]/50 focus:ring-emerald-500/30 focus:border-emerald-500/50"
           />
-          <Button 
+          <Button
             onClick={handleSend}
             disabled={!inputValue.trim()}
             className="bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50 disabled:cursor-not-allowed"
