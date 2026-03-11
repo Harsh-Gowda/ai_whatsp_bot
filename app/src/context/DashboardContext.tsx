@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 // Types
 export interface Lead {
@@ -32,142 +33,167 @@ export interface DashboardStats {
 export interface DashboardContextType {
   // Stats
   stats: DashboardStats;
-  
+
   // Leads
   leads: Lead[];
   selectedLead: Lead | null;
   setSelectedLead: (lead: Lead | null) => void;
-  
+
   // Chat
   chatMessages: ChatMessage[];
-  
+
   // Actions
   isBotPaused: boolean;
   toggleBotPause: () => void;
   refreshData: () => void;
-  
+
   // Loading states
   isLoading: boolean;
 }
 
-// Mock Data
-const mockStats: DashboardStats = {
-  leadsCaptured: 128,
-  leadsChange: 12,
-  bookingsSecured: 34,
-  bookingsChange: 8,
-  afterHoursConversations: 89,
-  conversationsChange: 22,
-  revenueRecovered: 4120,
-  revenueChange: 15,
+const initialStats: DashboardStats = {
+  leadsCaptured: 0,
+  leadsChange: 0,
+  bookingsSecured: 0,
+  bookingsChange: 0,
+  afterHoursConversations: 0,
+  conversationsChange: 0,
+  revenueRecovered: 0,
+  revenueChange: 0,
 };
-
-const mockLeads: Lead[] = [
-  {
-    id: '1',
-    name: 'Marcus Reid',
-    phone: '+1 (555) 123-4567',
-    inquiry: 'Whitening consultation',
-    timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-    status: 'new',
-    intentLevel: 'high',
-  },
-  {
-    id: '2',
-    name: 'Sarah Chen',
-    phone: '+1 (555) 234-5678',
-    inquiry: 'Implant pricing',
-    timestamp: new Date(Date.now() - 14 * 60 * 1000).toISOString(),
-    status: 'replied',
-    intentLevel: 'high',
-  },
-  {
-    id: '3',
-    name: 'Diego Ortiz',
-    phone: '+1 (555) 345-6789',
-    inquiry: 'Book cleaning',
-    timestamp: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    status: 'booked',
-    intentLevel: 'medium',
-  },
-  {
-    id: '4',
-    name: 'Aisha Patel',
-    phone: '+1 (555) 456-7890',
-    inquiry: 'Emergency visit',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    status: 'escalated',
-    intentLevel: 'high',
-  },
-  {
-    id: '5',
-    name: 'James Wilson',
-    phone: '+1 (555) 567-8901',
-    inquiry: 'Invisalign consultation',
-    timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-    status: 'replied',
-    intentLevel: 'medium',
-  },
-];
-
-const mockChatMessages: ChatMessage[] = [
-  {
-    id: '1',
-    role: 'user',
-    content: 'Hi, do you offer weekend appointments?',
-    timestamp: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '2',
-    role: 'assistant',
-    content: 'Yes—Saturday 9am–2pm. Would you like me to hold a slot?',
-    timestamp: new Date(Date.now() - 9 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '3',
-    role: 'user',
-    content: 'Yes please, 10am.',
-    timestamp: new Date(Date.now() - 8 * 60 * 1000).toISOString(),
-  },
-  {
-    id: '4',
-    role: 'assistant',
-    content: "Reserved 10am Saturday. I'll text a confirmation shortly.",
-    timestamp: new Date(Date.now() - 7 * 60 * 1000).toISOString(),
-  },
-];
 
 // Context
 const DashboardContext = createContext<DashboardContextType | undefined>(undefined);
 
 export function DashboardProvider({ children }: { children: React.ReactNode }) {
-  const [stats] = useState<DashboardStats>(mockStats);
-  const [leads] = useState<Lead[]>(mockLeads);
+  const [stats, setStats] = useState<DashboardStats>(initialStats);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
-  const [chatMessages] = useState<ChatMessage[]>(mockChatMessages);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isBotPaused, setIsBotPaused] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Calculate stats from leads
+  const calculateStats = useCallback((currentLeads: Lead[]) => {
+    const booked = currentLeads.filter(l => l.status === 'booked').length;
+    setStats({
+      leadsCaptured: currentLeads.length,
+      leadsChange: 12, // Mocked trend
+      bookingsSecured: booked,
+      bookingsChange: 8,
+      afterHoursConversations: Math.floor(currentLeads.length * 0.8),
+      conversationsChange: 22,
+      revenueRecovered: booked * 150, // Assuming average $150 per booking
+      revenueChange: 15,
+    });
+  }, []);
+
+  // Fetch Leads
+  const fetchLeads = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('leads')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      if (data) {
+        const mappedLeads: Lead[] = data.map(l => ({
+          id: l.id,
+          name: l.name || 'New Lead',
+          phone: l.phone,
+          inquiry: l.inquiry || 'No inquiry text',
+          timestamp: l.created_at,
+          status: (l.status as any) || 'new',
+          intentLevel: (l.intent_level as any) || 'medium',
+        }));
+        setLeads(mappedLeads);
+        calculateStats(mappedLeads);
+      }
+    } catch (error) {
+      console.error('Error fetching leads:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [calculateStats]);
+
+  // Fetch Chat Messages for selected lead
+  const fetchMessages = useCallback(async (leadId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('lead_id', leadId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      if (data) {
+        setChatMessages(data.map(m => ({
+          id: m.id,
+          role: m.role as any,
+          content: m.content,
+          timestamp: m.created_at,
+        })));
+      }
+    } catch (error) {
+      console.error('Error fetching messages:', error);
+    }
+  }, []);
+
+  // Effect for fetching messages when lead changes
+  useEffect(() => {
+    if (selectedLead) {
+      fetchMessages(selectedLead.id);
+
+      // Subscribe to messages for this lead
+      const channel = supabase
+        .channel(`messages-${selectedLead.id}`)
+        .on('postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `lead_id=eq.${selectedLead.id}` },
+          () => {
+            fetchMessages(selectedLead.id);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    } else {
+      setChatMessages([]);
+    }
+  }, [selectedLead, fetchMessages]);
+
   const toggleBotPause = useCallback(() => {
     setIsBotPaused(prev => !prev);
+    // In a real app, you would also update this in the database or via API
   }, []);
 
   const refreshData = useCallback(() => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+    fetchLeads();
+  }, [fetchLeads]);
 
-  // Auto-refresh every 30 seconds
+  // Initial fetch and Real-time subscription for leads
   useEffect(() => {
-    const interval = setInterval(() => {
-      refreshData();
-    }, 30000);
+    fetchLeads();
 
-    return () => clearInterval(interval);
-  }, [refreshData]);
+    const leadsChannel = supabase
+      .channel('leads-all')
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'leads' },
+        () => {
+          fetchLeads();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(leadsChannel);
+    };
+  }, [fetchLeads]);
 
   const value: DashboardContextType = {
     stats,
