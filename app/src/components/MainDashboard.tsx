@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { PerformanceStats } from './PerformanceStats';
+import { EngagementIntelligence } from './EngagementIntelligence';
 import { LeadFeed } from './LeadFeed';
 import { ActionsPanel } from './ActionsPanel';
 
@@ -19,14 +19,14 @@ export function MainDashboard() {
         ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}
       `}
     >
-      {/* Performance Stats - Takes 5 columns */}
+      {/* Engagement Intelligence - Takes 5 columns */}
       <div 
         className={`
           lg:col-span-5 transition-all duration-700 delay-100
           ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-8'}
         `}
       >
-        <PerformanceStats />
+        <EngagementIntelligence />
       </div>
 
       {/* Lead Feed - Takes 4 columns */}
