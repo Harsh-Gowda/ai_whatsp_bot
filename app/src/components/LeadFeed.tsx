@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Filter, MoreHorizontal, User } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useDashboard, type Lead } from '../context/DashboardContext';
@@ -112,8 +113,14 @@ function LeadRow({ lead, isSelected, onSelect }: LeadRowProps) {
 
 export function LeadFeed() {
   const { leads, selectedLead, setSelectedLead } = useDashboard();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
+
+  const handleLeadSelect = (lead: Lead) => {
+    setSelectedLead(lead);
+    navigate('/conversations');
+  };
 
   const filteredLeads = leads.filter(lead => {
     const matchesSearch = 
@@ -195,7 +202,7 @@ export function LeadFeed() {
               key={lead.id}
               lead={lead}
               isSelected={selectedLead?.id === lead.id}
-              onSelect={setSelectedLead}
+              onSelect={handleLeadSelect}
             />
           ))}
         </div>
