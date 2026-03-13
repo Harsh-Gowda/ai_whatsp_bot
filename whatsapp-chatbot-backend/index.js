@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 require('dotenv').config();
 const db = require('./services/supabase');
+const gemini = require('./services/gemini');
 
 const app = express();
 app.use(cors());
@@ -48,11 +49,10 @@ app.post('/webhook', async (req, res) => {
             // 2. Save User Message
             await db.saveMessage(lead.id, 'user', text);
 
-            // TODO: Call AI Service (Gemini/OpenAI)
-            // For now, simple echo or placeholder
-            const aiResponse = "Hi! I'm your AI dental assistant. How can I help you today?";
+            // 3. Call AI Service (Gemini)
+            const aiResponse = await gemini.generateResponse(text);
 
-            // 3. Save AI Response
+            // 4. Save AI Response
             await db.saveMessage(lead.id, 'assistant', aiResponse);
 
             // 4. Send WhatsApp Reply (if configured)
